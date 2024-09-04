@@ -197,8 +197,363 @@ monitor file_sharing {
 
 ## 6）the producer-consumer problem (w/ N buffers) by using Java supports
 
-TBD
+Java codes:
+```java
+package hw1;
+
+import java.lang.Thread;
+import java.util.Random;
+
+class Store {
+    static int[] sharedResource = {0, 0, 0, 0, 0};
+    static int currProduceIdx = 0;
+    static int currConsumeIdx = 0;
+
+    public synchronized void produce (int value) {
+        while (sharedResource[currProduceIdx] != 0) {
+            try {
+                wait(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("[Store] \t produced value: " + value + " at index " + currProduceIdx);
+        sharedResource[currProduceIdx] = value;
+        currProduceIdx = (currProduceIdx + 1) % 5; // next index to produce
+
+        notifyAll();
+    }
+
+    public synchronized void consume () {
+        while (sharedResource[currConsumeIdx] == 0) {
+            try {
+                wait(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("[Store] \t consumed value: " + sharedResource[currConsumeIdx] + " at index " + currConsumeIdx);
+        sharedResource[currConsumeIdx] = 0;
+        currConsumeIdx = (currConsumeIdx + 1) % 5; // next index to consume
+
+        notifyAll();
+    }
+}
+
+class Producer extends Thread {
+    private Store store;
+
+    public Producer(Store store) {
+        this.store = store;
+    }
+
+    @Override
+    public void run() {
+        Random rand = new Random();
+        for (int i = 0; i < 10; i++) {
+            int value = rand.nextInt(100);
+            store.produce(value);
+            System.out.println("[Producer] \t produced value: " + value);
+        }
+    }
+}
+
+class Consumer extends Thread {
+    private Store store;
+
+    public Consumer(Store store) {
+        this.store = store;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            System.out.println("[Consumer] \t wanted to consume value");
+            store.consume();
+        }
+    }
+}
+
+public class Problem6 {
+    // testing
+    public static void main(String[] args) {
+        System.out.println("[main] \t Starting producer-consumer problem...");
+
+        Store store = new Store();
+        Producer producer = new Producer(store);
+        Consumer consumer = new Consumer(store);
+
+        producer.start();
+        consumer.start();
+
+        try {
+            System.out.println("[main] \t Waiting for threads to finish...");
+            producer.join();
+            consumer.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("[main] \t Producer-consumer problem finished.");
+    }
+}
+```
+
+Results:
+```
+[main]           Starting producer-consumer problem...
+[main]           Waiting for threads to finish...
+[Consumer]       wanted to consume value
+[Store]          produced value: 39 at index 0
+[Store]          consumed value: 39 at index 0
+[Consumer]       wanted to consume value
+[Producer]       produced value: 39
+[Store]          produced value: 77 at index 1
+[Producer]       produced value: 77
+[Store]          consumed value: 77 at index 1
+[Consumer]       wanted to consume value
+[Store]          produced value: 90 at index 2
+[Producer]       produced value: 90
+[Store]          consumed value: 90 at index 2
+[Consumer]       wanted to consume value
+[Store]          produced value: 42 at index 3
+[Producer]       produced value: 42
+[Store]          consumed value: 42 at index 3
+[Consumer]       wanted to consume value
+[Store]          produced value: 89 at index 4
+[Producer]       produced value: 89
+[Store]          consumed value: 89 at index 4
+[Consumer]       wanted to consume value
+[Store]          produced value: 1 at index 0
+[Producer]       produced value: 1
+[Store]          consumed value: 1 at index 0
+[Consumer]       wanted to consume value
+[Store]          produced value: 21 at index 1
+[Producer]       produced value: 21
+[Store]          consumed value: 21 at index 1
+[Consumer]       wanted to consume value
+[Store]          produced value: 71 at index 2
+[Producer]       produced value: 71
+[Store]          consumed value: 71 at index 2
+[Consumer]       wanted to consume value
+[Store]          produced value: 32 at index 3
+[Producer]       produced value: 32
+[Store]          consumed value: 32 at index 3
+[Consumer]       wanted to consume value
+[Store]          produced value: 43 at index 4
+[Producer]       produced value: 43
+[Store]          consumed value: 43 at index 4
+[main]           Producer-consumer problem finished.
+```
 
 ## 7）the readers-writers problem (w/ reader’s priority) by using Java supports
 
-TBD
+Java codes:
+```java
+public class CondObj {
+    public CondObj() {}
+}
+```
+
+```java
+package hw1;
+
+import java.lang.Thread;
+
+class FakeFileIO {
+    private String fileContent;
+    private CondObj condition;
+    private boolean isUsing;
+    private boolean writeBarrier;
+    private int readCount;
+
+    public FakeFileIO(String fileContent) {
+        System.out.println("[FakeFileIO] \t initialized with content: " + fileContent);
+        this.fileContent = fileContent;
+        condition = new CondObj();
+        isUsing = false;
+        writeBarrier = true;
+        readCount = 0;
+    }
+
+    public void write(String content) {
+        synchronized (condition) {
+            while (isUsing) {
+                try {
+                    condition.wait(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // force writer to wait, then reader can read the content.
+            while (writeBarrier) {
+                try {
+                    condition.notifyAll();
+                    condition.wait(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                writeBarrier = false;
+            }
+            
+            isUsing = true;
+            System.out.println("[FakeFileIO] \t writing content: " + content);
+            fileContent = content;
+    
+            isUsing = false;
+            writeBarrier = true;
+            condition.notifyAll();
+        }
+    }
+
+    public String read() {
+        synchronized (condition) {
+            if (readCount == 0) {
+                while (isUsing) {
+                    try {
+                        condition.wait(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            readCount++;
+            if (readCount == 1) {
+                isUsing = true;
+            }
+            
+            System.out.println("[FakeFileIO] \t reading content: " + fileContent);
+            String content = fileContent;
+
+            readCount--;
+            if (readCount == 0) {
+                isUsing = false;
+                condition.notifyAll();
+            }
+
+            return content;
+        }
+    }
+}
+
+class Writer extends Thread {
+    private FakeFileIO fileIO;
+    private static String[] contents = {
+        "content000",
+        "content001",
+        "content002",
+        "content003",
+        "content004",
+        "content005",
+        "content006",
+        "content007",
+        "content008",
+        "content009"
+    };
+
+    public Writer(FakeFileIO fileIO) {
+        this.fileIO = fileIO;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            fileIO.write(contents[i]);
+            System.out.println("[Writer] \t wrote content: " + contents[i]);
+        }
+    }
+}
+
+class Reader extends Thread {
+    private FakeFileIO fileIO;
+
+    public Reader(FakeFileIO fileIO) {
+        this.fileIO = fileIO;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            fileIO.read();
+            System.out.println("[Reader] \t read content");
+        }
+    }
+}
+
+
+public class Problem7 {
+    // testing
+    public static void main(String[] args) {
+        System.out.println("[main] \t Starting reader-writer problem...");
+
+        FakeFileIO fileIO = new FakeFileIO("initial content");
+        Writer writer = new Writer(fileIO);
+        Reader reader = new Reader(fileIO);
+
+        writer.start();
+        reader.start();
+
+        try {
+            System.out.println("[main] \t Waiting for threads to finish...");
+            writer.join();
+            reader.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("[main] \t Reader-writer problem finished.");
+    }
+}
+```
+
+
+Results:
+```
+[main]           Starting reader-writer problem...
+[FakeFileIO]     initialized with content: initial content
+[main]           Waiting for threads to finish...
+[FakeFileIO]     reading content: initial content
+[Reader]         read content
+[FakeFileIO]     writing content: content000
+[FakeFileIO]     reading content: content000
+[Reader]         read content
+[Writer]         wrote content: content000
+[FakeFileIO]     reading content: content000
+[Reader]         read content
+[FakeFileIO]     reading content: content000
+[Reader]         read content
+[FakeFileIO]     writing content: content001
+[Writer]         wrote content: content001
+[FakeFileIO]     reading content: content001
+[Reader]         read content
+[FakeFileIO]     reading content: content001
+[Reader]         read content
+[FakeFileIO]     writing content: content002
+[Writer]         wrote content: content002
+[FakeFileIO]     reading content: content002
+[Reader]         read content
+[FakeFileIO]     reading content: content002
+[Reader]         read content
+[FakeFileIO]     writing content: content003
+[Writer]         wrote content: content003
+[FakeFileIO]     reading content: content003
+[Reader]         read content
+[FakeFileIO]     reading content: content003
+[Reader]         read content
+[FakeFileIO]     writing content: content004
+[Writer]         wrote content: content004
+[FakeFileIO]     writing content: content005
+[Writer]         wrote content: content005
+[FakeFileIO]     writing content: content006
+[Writer]         wrote content: content006
+[FakeFileIO]     writing content: content007
+[Writer]         wrote content: content007
+[FakeFileIO]     writing content: content008
+[Writer]         wrote content: content008
+[FakeFileIO]     writing content: content009
+[Writer]         wrote content: content009
+[main]           Reader-writer problem finished.
+```
