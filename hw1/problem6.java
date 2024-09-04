@@ -1,3 +1,5 @@
+package hw1;
+
 import java.lang.Thread;
 import java.util.Random;
 
