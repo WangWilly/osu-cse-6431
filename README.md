@@ -2,6 +2,22 @@
 
 Operating System
 
+📌 Java environment:
+```bash
+java -version
+
+# (on MacOS)
+# java version "21.0.4" 2024-07-16 LTS
+# Java(TM) SE Runtime Environment (build 21.0.4+8-LTS-274)
+# Java HotSpot(TM) 64-Bit Server VM (build 21.0.4+8-LTS-274, mixed mode, sharing)
+
+# (on OSU coelinux)
+# openjdk version "20.0.2" 2023-07-18
+# OpenJDK Runtime Environment (build 20.0.2+9-78)
+# OpenJDK 64-Bit Server VM (build 20.0.2+9-78, mixed mode, sharing)
+```
+
+
 - [Homework 1](./hw1/hw1.pdf)
     - [myAnswer](./hw1/myAnswer.md)
     - Reference1: https://medium.com/@reetesh043/java-wait-notify-and-notifyall-methods-3d3b511bd3ae
