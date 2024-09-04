@@ -2,11 +2,11 @@ package hw1;
 
 import java.lang.Thread;
 
-// TODO: w/ readers' priority
 class FakeFileIO {
     private String fileContent;
     private CondObj condition;
     private boolean isUsing;
+    private boolean writeBarrier;
     private int readCount;
 
     public FakeFileIO(String fileContent) {
@@ -14,6 +14,7 @@ class FakeFileIO {
         this.fileContent = fileContent;
         condition = new CondObj();
         isUsing = false;
+        writeBarrier = true;
         readCount = 0;
     }
 
@@ -26,12 +27,24 @@ class FakeFileIO {
                     e.printStackTrace();
                 }
             }
+
+            // force writer to wait, then reader can read the content.
+            while (writeBarrier) {
+                try {
+                    condition.notifyAll();
+                    condition.wait(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                writeBarrier = false;
+            }
             
             isUsing = true;
             System.out.println("[FakeFileIO] \t writing content: " + content);
             fileContent = content;
     
             isUsing = false;
+            writeBarrier = true;
             condition.notifyAll();
         }
     }
