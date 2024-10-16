@@ -7,6 +7,7 @@ public class Operation {
     private int rowNumber; // which row to read or write
     private int value;     // for read, this is the return value; for write, this is the value to write
 
+    public static int OP_STOP = -1;
     public static int OP_READ = 0;
     public static int OP_WRITE = 1;
 
@@ -26,6 +27,14 @@ public class Operation {
         return new Operation(OP_WRITE, rowNumber, value);
     }
 
+    public static Operation stopOp() {
+        return new Operation(OP_STOP, -1, -1);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public int fromTxIdx = -1; // TODO:
+
     ////////////////////////////////////////////////////////////////////////////
 
     public int getType() {
@@ -42,6 +51,10 @@ public class Operation {
 
     public void setValue(int value) {
         this.value = value;
+    }
+
+    public boolean isStop() {
+        return this.type == OP_STOP;
     }
 
     public String toString() {
