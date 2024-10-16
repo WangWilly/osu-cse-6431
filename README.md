@@ -25,3 +25,6 @@ java -version
     - Reference3: https://wangwilly.github.io/willywangkaa/2018/07/10/Operating-System-Process-Synchronization/
     - Reference4: https://wangwilly.github.io/willywangkaa/2018/08/04/Operating-System-Process-Synchronization-2/
     - Reference5: https://www.geeksforgeeks.org/static-variables-in-java-with-examples/
+
+- Homework 2
+    - Execute: `./scripts/runLab1.sh Database`
