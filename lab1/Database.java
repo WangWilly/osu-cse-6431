@@ -1,11 +1,10 @@
 package lab1;
-import java.util.List;
 
+import java.util.LinkedList;
+import java.util.List;
 import lab1.utils.Operation;
 import lab1.utils.Row;
 import lab1.utils.Transaction;
-
-import java.util.LinkedList;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -24,11 +23,11 @@ public class Database {
         // Here I provide a serial implementation. You need to change it to a concurrent execution.
         for(Transaction t : transactions) {
             for(Operation o : t.getOperations()) {
-                System.out.println("Transaction "+t+" executing operation "+o);
+                System.out.println("Transaction " + t + " executing operation " + o);
+
                 if(o.getType() == 0) {
                    o.setValue(rows[o.getRowNumber()].getValue());
-                }
-                else {
+                } else {
                    rows[o.getRowNumber()].setValue(o.getValue());
                 }
             }
@@ -54,3 +53,20 @@ public class Database {
         db.executeTransactions(batch);
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * TODO: Expected output: The program should output to screen a log like:
+ * 
+ * ```
+ * Transaction 1 reads row100 = 3; Transaction 2 writes row 99 = 6; …
+ * ```
+ * 
+ * and
+ * 
+ * ```
+ * This execution is equivalent to a serial execution of Transaction 2 -> Transaction 1-> …
+ * ```
+ * 
+ */

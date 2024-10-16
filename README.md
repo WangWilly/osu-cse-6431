@@ -26,5 +26,17 @@ java -version
     - Reference4: https://wangwilly.github.io/willywangkaa/2018/08/04/Operating-System-Process-Synchronization-2/
     - Reference5: https://www.geeksforgeeks.org/static-variables-in-java-with-examples/
 
-- Homework 2
+- Lab 1
     - Execute: `./scripts/runLab1.sh Database`
+
+
+## Lab1
+
+### Deadlock Prevention
+
+Prompt: Since all rows are known before executing a transaction, you should be able to avoid the deadlock problem.
+
+- ❌ Deadlock Detection: Regularly check for cycles in the resource allocation graph and abort transactions to break deadlocks.
+- 🚧 Deadlock Prevention: Ensure that the system will never enter a deadlock state.
+    - **Hold and Wait**: Require processes to request all resources at once and prevent them from requesting additional resources while holding resources.
+    - (For 2-phase locking) Lock all resources before starting the transaction by ordering the resources and requesting them in order.
