@@ -118,7 +118,7 @@ public class Database2 {
     ////////////////////////////////////////////////////////////////////////////
 
     public static void main(String []args) {
-	    Transaction t1 = new Transaction();
+        Transaction t1 = new Transaction();
         t1.addOperation(Operation.readOp(31));
         t1.addOperation(Operation.writeOp(41, 5));
         t1.addOperation(Operation.readOp(51));
