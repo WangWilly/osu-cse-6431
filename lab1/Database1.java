@@ -35,7 +35,7 @@ public class Database1 {
                     acquiredLocks.add(locks[rowNumber].writeLock());
                 }
 
-                acquiredLocks.get(acquiredLocks.size()-1).lock();
+                acquiredLocks.get(acquiredLocks.size() - 1).lock();
             }
 
             // Execute the transaction
@@ -116,20 +116,3 @@ public class Database1 {
         db.executeTransactions(batch);
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * TODO: Expected output: The program should output to screen a log like:
- * 
- * ```
- * Transaction 1 reads row100 = 3; Transaction 2 writes row 99 = 6; …
- * ```
- * 
- * and
- * 
- * ```
- * This execution is equivalent to a serial execution of Transaction 2 -> Transaction 1-> …
- * ```
- * 
- */

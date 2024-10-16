@@ -14,7 +14,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Database2 {
     private Row rows[] = new Row[100];
+
+    @SuppressWarnings("unchecked")
     private LinkedBlockingQueue<Operation> stageQueues[] = new LinkedBlockingQueue[10];
+
+    ////////////////////////////////////////////////////////////////////////////
 
     private Thread issueStageProc(int stageIdx) {
         Thread thread = new Thread(() -> {
@@ -53,9 +57,6 @@ public class Database2 {
         thread.start();
         return thread;
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-
 
     private Thread[] startStageProc() {
         Thread threads[] = new Thread[10];
@@ -143,20 +144,3 @@ public class Database2 {
         db.executeTransactions(batch);
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * TODO: Expected output: The program should output to screen a log like:
- * 
- * ```
- * Transaction 1 reads row100 = 3; Transaction 2 writes row 99 = 6; …
- * ```
- * 
- * and
- * 
- * ```
- * This execution is equivalent to a serial execution of Transaction 2 -> Transaction 1-> …
- * ```
- * 
- */

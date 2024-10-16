@@ -40,3 +40,10 @@ Prompt: Since all rows are known before executing a transaction, you should be a
 - 🚧 Deadlock Prevention: Ensure that the system will never enter a deadlock state.
     - **Hold and Wait**: Require processes to request all resources at once and prevent them from requesting additional resources while holding resources.
     - (For 2-phase locking) Lock all resources before starting the transaction by ordering the resources and requesting them in order.
+
+### TODO
+
+- [ ] Implement the history of operations in the database.
+- [ ] Compute the serialization graph of the transactions from the history.
+- [ ] Enumerate all possible serial schedules.
+- [ ] Use flow algorithms to find a serial schedule from the serialization graph.
