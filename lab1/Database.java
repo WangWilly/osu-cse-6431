@@ -37,7 +37,7 @@ public class Database {
     ////////////////////////////////////////////////////////////////////////////
 
     public static void main(String []args) {
-	    Transaction t1 = new Transaction();
+        Transaction t1 = new Transaction();
         t1.addOperation(Operation.readOp(3));
         t1.addOperation(Operation.writeOp(4, 5));
         

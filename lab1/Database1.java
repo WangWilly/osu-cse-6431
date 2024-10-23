@@ -17,8 +17,20 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 ////////////////////////////////////////////////////////////////////////////////
 
 public class Database1 {
+    ////////////////////////////////////////////////////////////////////////////
+    // Operation History
+    
+    private ArrayList<Operation> opHist = new ArrayList<Operation>();
+    private ReadWriteLock historyLock = new ReentrantReadWriteLock();
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Data & Locks
+
     private Row rows[] = new Row[100];
     private ReadWriteLock locks[] = new ReentrantReadWriteLock[100];
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Transaction Execution Thread
 
     private Thread issueTx(Transaction tx, int txIdx) {
         Thread thread = new Thread(() -> {
@@ -43,10 +55,18 @@ public class Database1 {
                 // System.out.println("Transaction " + txIdx + " executing operation " + op);
                 if(op.getType() == Operation.OP_READ) {
                     op.setValue(rows[op.getRowNumber()].getValue());
+                    Lock histLock = historyLock.writeLock();
+                    histLock.lock();
                     System.out.println("Transaction " + txIdx + " reads row " + op.getRowNumber() + " = " + op.getValue());
+                    opHist.add(op);
+                    histLock.unlock();
                 } else {
                     rows[op.getRowNumber()].setValue(op.getValue());
+                    Lock histLock = historyLock.writeLock();
+                    histLock.lock();
                     System.out.println("Transaction " + txIdx + " writes row " + op.getRowNumber() + " = " + op.getValue());
+                    opHist.add(op);
+                    histLock.unlock();
                 }
             }
 
@@ -62,6 +82,7 @@ public class Database1 {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Constructor
 
     public Database1() {
         for(int i = 0; i < 100; i++) {
@@ -71,12 +92,13 @@ public class Database1 {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Execute Transactions
 
     public void executeTransactions(List<Transaction> transactions) {
         Thread threads[] = new Thread[transactions.size()];
 
         for(int i = 0; i < transactions.size(); i++) {
-            threads[i] = issueTx(transactions.get(i), i);
+            threads[i] = issueTx(transactions.get(i), i + 1);
         }
 
         for(Thread t : threads) {
@@ -89,24 +111,37 @@ public class Database1 {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Get Operation History
+
+    public void printOperationHistory() {
+        Lock histLock = historyLock.readLock();
+        histLock.lock();
+        for(Operation op : opHist) {
+            System.out.println(op);
+        }
+        histLock.unlock();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Main
 
     public static void main(String []args) {
-	    Transaction t1 = new Transaction();
-        t1.addOperation(Operation.readOp(3));
-        t1.addOperation(Operation.writeOp(4, 5));
-        t1.addOperation(Operation.readOp(5));
-        t1.addOperation(Operation.writeOp(6, 7));
-        t1.addOperation(Operation.readOp(7));
+        Transaction t1 = new Transaction();
+        t1.addOperation(Operation.readOpWithTxID(3, 1));
+        t1.addOperation(Operation.writeOpWithTxID(4, 5, 1));
+        t1.addOperation(Operation.readOpWithTxID(5, 1));
+        t1.addOperation(Operation.writeOpWithTxID(6, 7, 1));
+        t1.addOperation(Operation.readOpWithTxID(7, 1));
         
         Transaction t2 = new Transaction();
-        t2.addOperation(Operation.writeOp(1, 99));
-        t2.addOperation(Operation.readOp(2));
-        t2.addOperation(Operation.writeOp(8, 9));
-        t2.addOperation(Operation.readOp(3));
-        t2.addOperation(Operation.writeOp(10, 11));
-        t2.addOperation(Operation.readOp(4));
-        t2.addOperation(Operation.writeOp(12, 13));
-        t2.addOperation(Operation.readOp(5));
+        t2.addOperation(Operation.writeOpWithTxID(1, 99, 2));
+        t2.addOperation(Operation.readOpWithTxID(2, 2));
+        t2.addOperation(Operation.writeOpWithTxID(8, 9, 2));
+        t2.addOperation(Operation.readOpWithTxID(3, 2));
+        t2.addOperation(Operation.writeOpWithTxID(10, 11, 2));
+        t2.addOperation(Operation.readOpWithTxID(4, 2));
+        t2.addOperation(Operation.writeOpWithTxID(12, 13, 2));
+        t2.addOperation(Operation.readOpWithTxID(5, 2));
 
         LinkedList<Transaction> batch = new LinkedList<Transaction>();
         batch.add(t1);
@@ -114,5 +149,7 @@ public class Database1 {
         
         Database1 db = new Database1();
         db.executeTransactions(batch);
+
+        db.printOperationHistory();
     }
 }

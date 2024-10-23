@@ -13,18 +13,32 @@ public class Operation {
 
     ////////////////////////////////////////////////////////////////////////////
 
-    public Operation(int type, int rowNumber, int value) {
+    private Operation(int type, int rowNumber, int value) {
         this.type = type;
         this.rowNumber = rowNumber;
         this.value = value;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
     public static Operation readOp(int rowNumber) {
         return new Operation(OP_READ, rowNumber, 0);
     }
 
+    public static Operation readOpWithTxID(int rowNumber, int txID) {
+        Operation op = new Operation(OP_READ, rowNumber, 0);
+        op.fromTxIdx = txID;
+        return op;
+    }
+
     public static Operation writeOp(int rowNumber, int value) {
         return new Operation(OP_WRITE, rowNumber, value);
+    }
+
+    public static Operation writeOpWithTxID(int rowNumber, int value, int txID) {
+        Operation op = new Operation(OP_WRITE, rowNumber, value);
+        op.fromTxIdx = txID;
+        return op;
     }
 
     public static Operation stopOp() {
@@ -33,7 +47,7 @@ public class Operation {
 
     ////////////////////////////////////////////////////////////////////////////
 
-    public int fromTxIdx = -1; // TODO:
+    private int fromTxIdx = -1;
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -59,8 +73,8 @@ public class Operation {
 
     public String toString() {
         if(type == 0)
-            return "READ row "+rowNumber;
+            return "READ row " + rowNumber + " value " + value + " from transaction " + fromTxIdx;
         else
-            return "WRITE row "+rowNumber+" value "+value;
+            return "WRITE row " + rowNumber + " value " + value + " from transaction " + fromTxIdx;
     }
 }
