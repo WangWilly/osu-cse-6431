@@ -63,6 +63,12 @@ public class Operation {
         return this.value;
     }
 
+    public int getFromTxIdx() {
+        return this.fromTxIdx;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
     public void setValue(int value) {
         this.value = value;
     }

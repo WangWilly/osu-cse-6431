@@ -9,6 +9,8 @@ import java.util.Map;
 import lab1.utils.Operation;
 import lab1.utils.Row;
 import lab1.utils.Transaction;
+import lab1.utils.Graph;
+import lab1.utils.LoggerHelper;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -35,7 +37,7 @@ public class Database1 {
     private Thread issueTx(Transaction tx, int txIdx) {
         Thread thread = new Thread(() -> {
             // Lock all rows that this transaction is going to read or write
-            System.out.println("Transaction " + txIdx + " is waiting for locks");
+            LoggerHelper.log("Transaction " + txIdx + " is waiting for locks", LoggerHelper.LOG_LEVEL_DEBUG);
             ArrayList<Lock> acquiredLocks = new ArrayList<Lock>();
             for(Map.Entry<Integer,Integer> entry : tx.getRequestingRows().entrySet()) {
                 int rowNumber = entry.getKey();
@@ -55,23 +57,32 @@ public class Database1 {
                 // System.out.println("Transaction " + txIdx + " executing operation " + op);
                 if(op.getType() == Operation.OP_READ) {
                     op.setValue(rows[op.getRowNumber()].getValue());
+                    /** TODO: remove this block
                     Lock histLock = historyLock.writeLock();
                     histLock.lock();
-                    System.out.println("Transaction " + txIdx + " reads row " + op.getRowNumber() + " = " + op.getValue());
+                    LoggerHelper.log("Transaction " + txIdx + " reads row " + op.getRowNumber() + " = " + op.getValue(), LoggerHelper.LOG_LEVEL_DEBUG);
                     opHist.add(op);
                     histLock.unlock();
+                    */
                 } else {
                     rows[op.getRowNumber()].setValue(op.getValue());
+                    /** TODO: remove this block
                     Lock histLock = historyLock.writeLock();
                     histLock.lock();
-                    System.out.println("Transaction " + txIdx + " writes row " + op.getRowNumber() + " = " + op.getValue());
+                    LoggerHelper.log("Transaction " + txIdx + " writes row " + op.getRowNumber() + " = " + op.getValue(), LoggerHelper.LOG_LEVEL_DEBUG);
                     opHist.add(op);
                     histLock.unlock();
+                    */
                 }
+                Lock histLock = historyLock.writeLock();
+                histLock.lock();
+                LoggerHelper.log(op.toString(), LoggerHelper.LOG_LEVEL_DEBUG);
+                opHist.add(op);
+                histLock.unlock();
             }
 
             // Unlock all rows
-            System.out.println("Transaction " + txIdx + " is releasing locks");
+            LoggerHelper.log("Transaction " + txIdx + " is releasing locks", LoggerHelper.LOG_LEVEL_DEBUG);
             for(Lock lock : acquiredLocks) {
                 lock.unlock();
             }
@@ -113,13 +124,17 @@ public class Database1 {
     ////////////////////////////////////////////////////////////////////////////
     // Get Operation History
 
-    public void printOperationHistory() {
+    public String getOperationHistoryString() {
+        String res = "";
+
         Lock histLock = historyLock.readLock();
         histLock.lock();
         for(Operation op : opHist) {
-            System.out.println(op);
+            res += op.toString() + "\n";
         }
         histLock.unlock();
+
+        return res;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -150,6 +165,11 @@ public class Database1 {
         Database1 db = new Database1();
         db.executeTransactions(batch);
 
-        db.printOperationHistory();
+        LoggerHelper.log(db.getOperationHistoryString(), LoggerHelper.LOG_LEVEL_DEBUG);
+
+        Graph graph = Graph.fromOpHist(db.opHist);
+        LoggerHelper.log(graph.toString(), LoggerHelper.LOG_LEVEL_DEBUG);
+        ArrayList<Integer> res = Graph.topologicalSort(graph);
+        LoggerHelper.log(res.toString());
     }
 }

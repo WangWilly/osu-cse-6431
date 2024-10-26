@@ -43,7 +43,7 @@ Prompt: Since all rows are known before executing a transaction, you should be a
 
 ### TODO
 
-- [ ] Implement the history of operations in the database.
-- [ ] Compute the serialization graph of the transactions from the history.
+- [x] Implement the history of operations in the database.
+- [x] Compute the serialization graph of the transactions from the history.
 - [ ] Enumerate all possible serial schedules.
-- [ ] Use flow algorithms to find a serial schedule from the serialization graph.
+- [x] Use flow algorithms to find a serial schedule from the serialization graph.

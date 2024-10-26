@@ -8,6 +8,8 @@ import java.util.List;
 import lab1.utils.Operation;
 import lab1.utils.Row;
 import lab1.utils.Transaction;
+import lab1.utils.Graph;
+import lab1.utils.LoggerHelper;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,12 +38,12 @@ public class Database2 {
 
     private Thread issueStageProc(int stageIdx) {
         Thread thread = new Thread(() -> {
-            System.out.println("Stage " + stageIdx + " is running");
+            LoggerHelper.log("Stage " + stageIdx + " is running", LoggerHelper.LOG_LEVEL_DEBUG);
             while(true) {
                 try {
                     Operation op = stageQueues[stageIdx].take();
                     if (op.isStop()) {
-                        System.out.println("Stage " + stageIdx + " is done");
+                        LoggerHelper.log("Stage " + stageIdx + " is done", LoggerHelper.LOG_LEVEL_DEBUG);
                         if (stageIdx == 9) {
                             return;
                         }
@@ -58,14 +60,14 @@ public class Database2 {
 
                     if(op.getType() == Operation.OP_READ) {
                         op.setValue(rows[op.getRowNumber()].getValue());
-                        // System.out.println("Transaction " + op.fromTxIdx + " reads row " + op.getRowNumber() + " = " + op.getValue() + "(Stage " + stageIdx + ")");
+                        LoggerHelper.log("Transaction " + op.getFromTxIdx() + " reads row " + op.getRowNumber() + " = " + op.getValue(), LoggerHelper.LOG_LEVEL_DEBUG);
                     } else {
                         rows[rowNumber].setValue(op.getValue());
-                        // System.out.println("Transaction " + op.fromTxIdx + " writes row " + op.getRowNumber() + " = " + op.getValue() + "(Stage " + stageIdx + ")");
+                        LoggerHelper.log("Transaction " + op.getFromTxIdx() + " writes row " + op.getRowNumber() + " = " + op.getValue(), LoggerHelper.LOG_LEVEL_DEBUG);
                     }
                     Lock histLock = historyLock.writeLock();
                     histLock.lock();
-                    System.out.println("(Stage " + stageIdx + ") " + op);
+                    LoggerHelper.log("(Stage " + stageIdx + ") " + op, LoggerHelper.LOG_LEVEL_DEBUG);
                     opHist.add(op);
                     histLock.unlock();
                 } catch (InterruptedException e) {
@@ -138,13 +140,17 @@ public class Database2 {
     ////////////////////////////////////////////////////////////////////////////
     // Get Operation History
 
-    public void printOperationHistory() {
+    public String getOperationHistoryString() {
+        String res = "";
+
         Lock histLock = historyLock.readLock();
         histLock.lock();
         for(Operation op : opHist) {
-            System.out.println(op);
+            res += op.toString() + "\n";
         }
         histLock.unlock();
+
+        return res;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -174,6 +180,11 @@ public class Database2 {
         Database2 db = new Database2();
         db.executeTransactions(batch);
 
-        // db.printOperationHistory();
+        LoggerHelper.log(db.getOperationHistoryString(), LoggerHelper.LOG_LEVEL_DEBUG);
+
+        Graph graph = Graph.fromOpHist(db.opHist);
+        LoggerHelper.log(graph.toString(), LoggerHelper.LOG_LEVEL_DEBUG);
+        ArrayList<Integer> res = Graph.topologicalSort(graph);
+        LoggerHelper.log(res.toString());
     }
 }
