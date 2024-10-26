@@ -28,6 +28,7 @@ java -version
 
 - Lab 1
     - Execute: `./scripts/runLab1.sh Database`
+    - Debug: `DEBUG=true ./scripts/debugLab1.sh Database`
 
 
 ## Lab1
