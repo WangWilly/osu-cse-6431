@@ -1,2 +1,4 @@
 # compiled java
 *.class
+
+dist/
