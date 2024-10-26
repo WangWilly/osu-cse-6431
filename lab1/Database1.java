@@ -12,6 +12,7 @@ import lab1.utils.Transaction;
 import lab1.utils.Graph;
 import lab1.utils.LoggerHelper;
 import lab1.utils.OpHist;
+import lab1.utils.Common;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -142,6 +143,7 @@ public class Database1 {
     // Main
 
     public static void main(String []args) {
+        /**
         Transaction t1 = new Transaction();
         t1.addOperation(Operation.readOpWithTxID(3, 1));
         t1.addOperation(Operation.writeOpWithTxID(4, 5, 1));
@@ -162,6 +164,9 @@ public class Database1 {
         LinkedList<Transaction> batch = new LinkedList<Transaction>();
         batch.add(t1);
         batch.add(t2);
+        */
+
+        LinkedList<Transaction> batch = Common.readFromStdin();
         
         Database1 db = new Database1();
         db.executeTransactions(batch);
@@ -175,6 +180,10 @@ public class Database1 {
         LoggerHelper.log("All Transactions Orderings: ");
         LoggerHelper.log(db.opHist.getAllTxOrderings().toString());
         LoggerHelper.log("Current Ordering: ");
-        LoggerHelper.log(res.toString());
+        if (res == null) {
+            LoggerHelper.log("There is a cycle in the serialization graph");
+        } else {
+            LoggerHelper.log(res.toString());
+        }
     }
 }

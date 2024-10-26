@@ -33,6 +33,24 @@ java -version
 
 ## Lab1
 
+### Apply test cases
+
+```bash
+./scripts/runLab1.sh Database1 ./testcases/lab1/db1_test1.txt
+
+./scripts/runLab1.sh Database2 ./testcases/lab1/db2_test1.txt
+```
+
+Test case format:
+
+```text
+Read
+<TxId> R <RowId>
+
+Write
+<TxId> W <RowId> <Value>
+```
+
 ### Deadlock Prevention
 
 Prompt: Since all rows are known before executing a transaction, you should be able to avoid the deadlock problem.
@@ -46,5 +64,5 @@ Prompt: Since all rows are known before executing a transaction, you should be a
 
 - [x] Implement the history of operations in the database.
 - [x] Compute the serialization graph of the transactions from the history.
-- [ ] Enumerate all possible serial schedules.
+- [x] Enumerate all possible serial schedules.
 - [x] Use flow algorithms to find a serial schedule from the serialization graph.
