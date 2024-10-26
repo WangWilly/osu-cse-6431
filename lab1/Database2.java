@@ -10,6 +10,7 @@ import lab1.utils.Row;
 import lab1.utils.Transaction;
 import lab1.utils.Graph;
 import lab1.utils.LoggerHelper;
+import lab1.utils.OpHist;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,7 +23,7 @@ public class Database2 {
     ////////////////////////////////////////////////////////////////////////////
     // Operation History
     
-    private ArrayList<Operation> opHist = new ArrayList<Operation>();
+    private OpHist opHist = new OpHist();
     private ReadWriteLock historyLock = new ReentrantReadWriteLock();
 
     ////////////////////////////////////////////////////////////////////////////
@@ -180,11 +181,15 @@ public class Database2 {
         Database2 db = new Database2();
         db.executeTransactions(batch);
 
-        LoggerHelper.log(db.getOperationHistoryString(), LoggerHelper.LOG_LEVEL_DEBUG);
+        LoggerHelper.log(db.getOperationHistoryString());
 
         Graph graph = Graph.fromOpHist(db.opHist);
         LoggerHelper.log(graph.toString(), LoggerHelper.LOG_LEVEL_DEBUG);
         ArrayList<Integer> res = Graph.topologicalSort(graph);
+
+        LoggerHelper.log("All Transactions Orderings: ");
+        LoggerHelper.log(db.opHist.getAllTxOrderings().toString());
+        LoggerHelper.log("Current Ordering: ");
         LoggerHelper.log(res.toString());
     }
 }

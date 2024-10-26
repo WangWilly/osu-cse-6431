@@ -125,7 +125,7 @@ public class Graph {
 
     ////////////////////////////////////////////////////////////////////////////
 
-    public static Graph fromOpHist(ArrayList<Operation> opHist) {
+    public static Graph fromOpHist(OpHist opHist) {
         Graph graph = new Graph();
         // Integer: txIdx; Node: node
         // Initialize the graph with all the transactions
